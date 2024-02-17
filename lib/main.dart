@@ -1,8 +1,13 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:lab3/Service/AwesomeNotificationService.dart';
+import 'Service/LocalNotificationService.dart';
+import 'Service/NotificationService.dart';
 import 'Widget/LoginWidget.dart';
 import 'Widget/RegisterWidget.dart';
 import 'firebase_options.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 
 void main() async {
@@ -10,6 +15,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  AwesomeNotificationService().init();
+
   runApp(const MyApp());
 }
 
@@ -40,6 +48,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+      if(!isAllowed){
+        AwesomeNotifications().requestPermissionToSendNotifications();
+      }
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lab3/Service/NotificationService.dart';
 
 import '../Model/ExamModel.dart';
+import '../Service/AwesomeNotificationService.dart';
+import '../navigation_bar.dart';
 
 class Kolokviumi extends StatefulWidget {
   @override
@@ -15,13 +18,7 @@ class _KolokviumiState  extends State<Kolokviumi> {
 
   List<Exam> exams = [];
 
-
-  final List<String> titles = [
-    'Title 1',
-    'Title 2',
-    'Title 3',
-    'Title 4',
-  ];
+  int _currentIndex = 0;
 
   TextEditingController dateController = TextEditingController();
   DateTime selectedDate = DateTime.now();
@@ -54,6 +51,7 @@ class _KolokviumiState  extends State<Kolokviumi> {
           setState(() {
             exams = exams;
           });
+          AwesomeNotificationService().triggerNotification(exams);
         } else {
           print('No documents found for the user.');
         }
@@ -201,12 +199,25 @@ class _KolokviumiState  extends State<Kolokviumi> {
                 ],
               ),
             ),
+
           );
+
         },
       ),
+
+      bottomNavigationBar: CustomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+
     );
   }
 }
+
 
 
 
