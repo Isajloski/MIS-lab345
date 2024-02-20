@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+
+
+
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
@@ -8,6 +11,10 @@
         android:label="lab3"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCXV7Jez_rC8lE2dtzOrD4xrSaX48AFMq4"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

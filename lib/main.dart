@@ -2,8 +2,6 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lab3/Service/AwesomeNotificationService.dart';
-import 'Service/LocalNotificationService.dart';
-import 'Service/NotificationService.dart';
 import 'Widget/LoginWidget.dart';
 import 'Widget/RegisterWidget.dart';
 import 'firebase_options.dart';

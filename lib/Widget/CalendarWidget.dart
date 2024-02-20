@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:lab3/Service/NotificationService.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../Model/ExamModel.dart';

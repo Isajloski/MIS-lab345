@@ -1,55 +1,55 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../Model/ExamModel.dart';
-import '../Service/AwesomeNotificationService.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:lab3/Service/AwesomeNotificationService.dart';
+import 'package:lab3/Widget/MapWidget.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../Model/LocationModel.dart';
 import '../navigation_bar.dart';
 
-class Kolokviumi extends StatefulWidget {
+class LocationWidget extends StatefulWidget{
   @override
-  _KolokviumiState createState() => _KolokviumiState();
+  LocationWState createState() => LocationWState();
 }
 
+class LocationWState  extends State<LocationWidget> {
 
-class _KolokviumiState  extends State<Kolokviumi> {
-
-  List<Exam> exams = [];
-
-  int _currentIndex = 0;
+  int _currentIndex = 2;
 
   TextEditingController dateController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
   TextEditingController timeController = TextEditingController();
   TextEditingController nameController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    fetchUserData();
-  }
+  List <LocationModel> locations = [];
 
   void fetchUserData() {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       String id = user.uid;
       FirebaseFirestore.instance
-          .collection('Exam')
+          .collection('Location')
           .where('user_id', isEqualTo: id)
           .get()
           .then((QuerySnapshot querySnapshot) {
         if (querySnapshot.docs.isNotEmpty) {
-          exams.clear();
+          locations.clear();
           querySnapshot.docs.forEach((doc) {
             if (doc.data() is Map<String, dynamic>) {
-              exams.add(Exam.fromMap(doc.data() as Map<String, dynamic>));
+              locations.add(LocationModel.fromMap(doc.data() as Map<String, dynamic>));
             }
           });
+
           setState(() {
-            exams = exams;
+            locations = locations;
           });
-          AwesomeNotificationService().triggerNotification(exams);
+          AwesomeNotificationService().triggerNotificationLocation(locations);
         } else {
           print('No documents found for the user.');
         }
@@ -58,7 +58,6 @@ class _KolokviumiState  extends State<Kolokviumi> {
       });
     }
   }
-
 
   void _add(BuildContext context) {
     DateTime selectedDate = DateTime.now();
@@ -73,6 +72,8 @@ class _KolokviumiState  extends State<Kolokviumi> {
             children: [
               // Форма за името, со контролер nameController
               TextFormField(decoration: const InputDecoration(labelText: 'Предмет'), controller: nameController),
+              const SizedBox(height: 10),
+              TextFormField(decoration: const InputDecoration(labelText: 'Локација'), controller: locationController),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () async {
@@ -113,6 +114,8 @@ class _KolokviumiState  extends State<Kolokviumi> {
                     timeController.text = formattedTime;
                   }
                 },
+
+
                 child: AbsorbPointer(
                   child: TextFormField(
                     decoration: const InputDecoration(
@@ -122,6 +125,7 @@ class _KolokviumiState  extends State<Kolokviumi> {
                     controller: timeController,
                   ),
                 ),
+
               ),
             ],
           ),
@@ -133,11 +137,12 @@ class _KolokviumiState  extends State<Kolokviumi> {
                 User? user = FirebaseAuth.instance.currentUser;
                 if (user != null) {
                   String id = user.uid;
-                  FirebaseFirestore.instance.collection('Exam').add({
+                  FirebaseFirestore.instance.collection('Location').add({
                     'name': nameController.text,
                     'time': timeController.text,
                     'date': dateController.text,
                     'user_id': id,
+                    'location': locationController.text
                   });
                   print("Усошно е зачуван {nameController.text}");
                 }
@@ -153,56 +158,65 @@ class _KolokviumiState  extends State<Kolokviumi> {
   }
 
   @override
+  void initState() {
+    fetchUserData();
+  }
+
+  void openGoogleMaps(String location) async {
+    final uri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$location&travelmode=driving');
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch $uri';
+    }
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('183213'),
+        title: Text('Locations'),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-
+              _add(context);
             },
           ),
         ],
       ),
-      //Прикажи ги сите колоквиуми и испити како Grid
-      body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 5.0,
-          crossAxisSpacing: 5.0,
-        ),
-        itemCount: exams.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    exams[index].name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'датум: ${exams[index].date} \nвреме: ${exams[index].time}',
-                    style: const TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
+    body: Stack(
+    children: [
+    ListView.builder(
+    itemCount: locations.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(locations[index].name),
+          subtitle: Text('${locations[index].time} - ${locations[index].date} \nЛокација: ${locations[index].location}'),
+          trailing: ElevatedButton(
+            onPressed: () {
+              openGoogleMaps(locations[index].location);
+            },
+            child: Text('Мапа'),
+          ),
+        );
+      },
+    ),
+          Positioned(
+            top: MediaQuery.of(context).size.height *
+                0.72, // Adjust the position as needed
+            left: 175, // Distance from left edge
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MapWidget(locations: locations)));
+              },
+              child: const Icon(Icons.maps_home_work), // Change the icon as needed
             ),
-
-          );
-
-        },
+          ),
+        ],
       ),
-
       bottomNavigationBar: CustomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -214,8 +228,6 @@ class _KolokviumiState  extends State<Kolokviumi> {
 
     );
   }
+
 }
-
-
-
 

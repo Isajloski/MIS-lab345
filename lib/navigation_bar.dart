@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lab3/Widget/KolokviumiWidget.dart';
+import 'package:lab3/Widget/LocationWidget.dart';
 
 import 'Widget/CalendarWidget.dart';
+import 'Widget/MapWidget.dart';
 
 class CustomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -14,7 +16,7 @@ class CustomNavigationBar extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) {
-        onTap(index); // Notify the parent widget about the tap event
+        onTap(index);
         _navigateToWidget(context, index);
       },
       items: const [
@@ -25,6 +27,10 @@ class CustomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Icon(Icons.calendar_today),
           label: 'Calendar',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map_rounded),
+          label: 'Locations',
         ),
       ],
     );
@@ -37,6 +43,9 @@ class CustomNavigationBar extends StatelessWidget {
         break;
       case 1:
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => CalendarWidget()));
+        break;
+      case 2:
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LocationWidget()));
         break;
     }
   }
